@@ -13,9 +13,12 @@ public class ServiceSteps extends Service {
 
     public static final String ACTION_STOP = "ACTION_STOP";
     public static final String ACTION_START = "ACTION_START";
+    public static final String DOWNLOAD_PROGRESS = "DOWNLOAD_PROGRESS";
+    public static final String DOWNLOAD = "DOWNLOAD";
 
     private MediaPlayer mediaPlayer;
     private boolean isPlaying = false;
+    private boolean isDownloading = false;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -25,7 +28,9 @@ public class ServiceSteps extends Service {
         if (action.equals(ACTION_START)) {
             if (!isPlaying) {
                 Log.d("START", "onStartCommand ");
-                startMusic();
+                new Thread(
+                        () -> downloadAndPlay()
+                ).start();
             }
         } else if (action.equals(ACTION_STOP)) {
             if (isPlaying) {
@@ -35,6 +40,22 @@ public class ServiceSteps extends Service {
         }
 
         return START_STICKY;
+    }
+
+    private void downloadAndPlay() {
+        for (int i = 0; i <= 100; i+=10) {
+            Log.d("downloading", "downloadAndPlay: i = " + i);
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Intent intent = new Intent(DOWNLOAD);
+            intent.putExtra(DOWNLOAD_PROGRESS, i);
+            sendBroadcast(intent);
+        }
+        startMusic();
     }
 
     private void stopMusic() {
